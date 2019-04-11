@@ -1,0 +1,9 @@
+import sys
+import csv
+import MeCab
+
+m = MeCab.Tagger("/usr/lib/mecab/dic")
+text = m.parse("そのため、本実験を実施する")
+print(text)
+
+with open(
