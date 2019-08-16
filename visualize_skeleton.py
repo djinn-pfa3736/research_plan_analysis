@@ -31,12 +31,19 @@ def extract_experiments_info(row_count):
                 experiment_content += c
     return experiment_title_list, experiment_content_list
 
-def extract_skeleton(parse_results):
+def extract_skeleton(parse_results, id):
+    # pdb.set_trace()
+    global sentence_list1
+    global sentence_list2
+
     noun = []
     conj = []
     keywords = []
     skeleton = []
     noun_count = 0
+    sentence_list1 = []
+    sentence_list2 = []
+    sentence = ""
     for res in parse_results.split('\n'):
         cols = res.split('\t')
         if(1 < len(cols)):
@@ -44,15 +51,32 @@ def extract_skeleton(parse_results):
             # print(cols)
             if(parts[0].startswith('名詞')):
                 noun.append(cols[0])
+                sentence = sentence + cols[0]
                 # noun_count += 1
             elif(parts[0].startswith('接続詞')):
                 conj.append(cols[0])
                 skeleton.append(noun)
                 skeleton.append(cols[0])
+                sentence = sentence + cols[0]
+                if(id == 1):
+                    sentence_list1.append(sentence)
+                else:
+                    sentence_list2.append(sentence)
+                sentence = ""
                 noun = []
+            else:
+                sentence = sentence + cols[0]
+
             if(parts[0].startswith('名詞') or parts[0].startswith('接続詞')):
                 keywords.append(cols[0])
     skeleton.append(noun)
+    if(id == 1):
+        sentence_list1.append(sentence)
+    else:
+        sentence_list2.append(sentence)
+
+    # pdb.set_trace()
+
     return skeleton
 # print(data[i][0] + "\t" + str(skeleton) + "\t" + data[i][12] + "\t" + data[i][13])
 
@@ -172,7 +196,17 @@ def clicked_canvas1(event):
     noun_bag1.delete('1.0', 'end')
     noun_bag1.insert('1.0', '\n(' + str(len(bags[bag_id])) + ' words)')
     noun_bag1.insert('1.0', bags[bag_id])
-    print(bags[bag_id])
+
+    sentence1.delete('1.0', tk.END)
+    sentence1.tag_configure('RED', foreground = '#ff0000')
+    for i in range(0, len(sentence_list1)):
+        if(i == bag_id):
+            sentence1.insert(tk.END, sentence_list1[i], 'RED')
+        else:
+            sentence1.insert(tk.END, sentence_list1[i])
+            # print("Do nothing...")
+
+    # print(bags[bag_id])
 
 def clicked_canvas2(event):
     global pressed_x, pressed_y, item_id
@@ -187,7 +221,17 @@ def clicked_canvas2(event):
     noun_bag2.delete('1.0', 'end')
     noun_bag2.insert('1.0', '\n(' + str(len(bags[bag_id])) + ' words)')
     noun_bag2.insert('1.0', bags[bag_id])
-    print(bags[bag_id])
+
+    sentence2.delete('1.0', tk.END)
+    sentence2.tag_configure('RED', foreground = '#ff0000')
+    for i in range(0, len(sentence_list2)):
+        if(i == bag_id):
+            sentence2.insert(tk.END, sentence_list2[i], 'RED')
+        else:
+            sentence2.insert(tk.END, sentence_list2[i])
+            # print("Do nothing...")
+
+    # print(bags[bag_id])
 
 mecab = MeCab.Tagger("/usr/lib/mecab/dic")
 
@@ -217,7 +261,9 @@ def draw_skeleton1():
     row_count1 = id_input1.get()
     row_count1 = int(row_count1)
     parse_results1 = mecab.parse(data[row_count1][8])
-    skeleton1 = extract_skeleton(parse_results1)
+    sentence1.delete('1.0', 'end')
+    sentence1.insert('1.0', data[row_count1][8])
+    skeleton1 = extract_skeleton(parse_results1, 1)
     symbol_skeleton1 = extract_symbol_skeleton(skeleton1, conj_list, dir_list)
     compiled_skeleton1 = compile_skeleton(symbol_skeleton1)
 
@@ -236,7 +282,9 @@ def draw_skeleton2():
     row_count2 = id_input2.get()
     row_count2 = int(row_count2)
     parse_results2 = mecab.parse(data[row_count2][8])
-    skeleton2 = extract_skeleton(parse_results2)
+    sentence2.delete('1.0', 'end')
+    sentence2.insert('1.0', data[row_count2][8])
+    skeleton2 = extract_skeleton(parse_results2, 2)
     symbol_skeleton2 = extract_symbol_skeleton(skeleton2, conj_list, dir_list)
     compiled_skeleton2 = compile_skeleton(symbol_skeleton2)
 
@@ -250,25 +298,166 @@ def draw_skeleton2():
 
 root = tk.Tk()
 root.title("Skeleton Visualizer")
-root.geometry("960x480")
+root.geometry("1280x600")
 
+mainFrame = tk.Frame(root, width = 1280, height = 600, bg = "gray")
+mainFrame.pack()
+
+visualFrame = tk.Frame(mainFrame, width = 640, height = 600)
+sentenceFrame = tk.Frame(mainFrame, width = 640, height = 600, bg = "blue")
+visualFrame.pack(side = "left")
+sentenceFrame.pack(side = "left")
+
+skeleton1Frame = tk.Frame(visualFrame, width = 320, height = 600, bg = "gray")
+skeleton2Frame = tk.Frame(visualFrame, width = 320, height = 600, bg = "white")
+skeleton1Frame.pack(side = "left")
+skeleton2Frame.pack(side = "left")
+
+# Skeleton1 Area
+button1Frame = tk.Frame(skeleton1Frame, width = 320, height = 50)
+display1Frame = tk.Frame(skeleton1Frame, width = 320, height = 420)
+noun1Frame = tk.Frame(skeleton1Frame, width = 320, height = 130)
+button1Frame.pack()
+display1Frame.pack()
+noun1Frame.pack()
+
+# Button1 Area
+file_name_label = tk.Label(button1Frame, text = 'Input File Name: ')
+file_name_input = tk.Entry(button1Frame, text = 'File Name', width = 16)
+file_name_button = tk.Button(button1Frame, text = 'Load', width = 4, height = 1, bd = 1, command = load_file)
+"""
+file_name_label.pack(side = "left")
+file_name_input.pack(side = "left")
+file_name_button.pack(side = "left")
+"""
+file_name_label.place(x = 5, y = 2)
+file_name_input.place(x = 105, y = 2)
+file_name_button.place(x = 245, y = 0)
+
+id_label1 = tk.Label(button1Frame, text = 'Input Plan ID1: ')
+id_input1 = tk.Entry(button1Frame, text = 'Plan ID1', width = 16)
+id_button1 = tk.Button(button1Frame, text = 'Load', width = 4, height = 1, bd = 1, command = draw_skeleton1)
+"""
+id_label1.pack(side = "left")
+id_input1.pack(side = "left")
+id_button1.pack(side = "left")
+"""
+id_label1.place(x = 15, y = 30)
+id_input1.place(x = 105, y = 30)
+id_button1.place(x = 245, y = 25)
+
+# Display1 Area
+display1Subframe = tk.Frame(display1Frame, width = 320, height = 420)
+canvas1 = tk.Canvas(display1Subframe, width = 305, height = 405, bg = "white")
+bar_skeleton1_v = tk.Scrollbar(display1Subframe, orient = tk.VERTICAL)
+bar_skeleton1_v.config(command = canvas1.yview)
+canvas1.config(yscrollcommand = bar_skeleton1_v.set)
+canvas1.config(scrollregion=(0, 0, 0, 1500))
+canvas1.pack(side = "left")
+bar_skeleton1_v.pack(side = "left")
+display1Subframe.pack()
+bar_skeleton1_h = tk.Scrollbar(display1Frame, orient = tk.HORIZONTAL)
+bar_skeleton1_h.config(command = canvas1.xview)
+canvas1.config(xscrollcommand = bar_skeleton1_h.set)
+canvas1.config(scrollregion=(0, 1500, 0, 0))
+bar_skeleton1_h.pack(side = "top")
+
+# Noun1 Area
+noun1_label = tk.Label(noun1Frame, text = "Focused Noun-Bag of Plan ID1")
+noun_bag1 = tk.Text(noun1Frame, width=50, height=18)
+bar_noun1_v = tk.Scrollbar(noun1Frame, orient = tk.VERTICAL)
+bar_noun1_v.config(command = noun_bag1.yview)
+noun_bag1.config(yscrollcommand = bar_noun1_v.set)
+# noun_bag1.config(scrollregion=(0, 0, 0, 150))
+noun1_label.pack()
+noun_bag1.pack(side = "left")
+bar_noun1_v.pack(side = "left")
+
+# Skeleton2 Area
+button2Frame = tk.Frame(skeleton2Frame, width = 320, height = 50)
+display2Frame = tk.Frame(skeleton2Frame, width = 320, height = 420)
+noun2Frame = tk.Frame(skeleton2Frame, width = 320, height = 130)
+button2Frame.pack()
+display2Frame.pack()
+noun2Frame.pack()
+
+# Button2 Area
+id_label2 = tk.Label(root, text = 'Input Plan ID2: ')
+id_input2 = tk.Entry(root, text = 'Plan ID2', width = 16)
+id_button2 = tk.Button(root, text = 'Load', width = 4, height = 1, bd = 1, command = draw_skeleton2)
+id_label2.place(x = 335, y = 30)
+id_input2.place(x = 425, y = 30)
+id_button2.place(x = 565, y = 25)
+
+# Display2 Area
+display2Subframe = tk.Frame(display2Frame, width = 320, height = 420)
+canvas2 = tk.Canvas(display2Subframe, width = 305, height = 405, bg = "white")
+bar_skeleton2_v = tk.Scrollbar(display2Subframe, orient = tk.VERTICAL)
+bar_skeleton2_v.config(command = canvas2.yview)
+canvas2.config(yscrollcommand = bar_skeleton2_v.set)
+canvas2.config(scrollregion=(0, 0, 0, 1500))
+canvas2.pack(side = "left")
+bar_skeleton2_v.pack(side = "left")
+display2Subframe.pack()
+bar_skeleton2_h = tk.Scrollbar(display2Frame, orient = tk.HORIZONTAL)
+bar_skeleton2_h.config(command = canvas2.xview)
+canvas2.config(xscrollcommand = bar_skeleton2_h.set)
+canvas2.config(scrollregion=(0, 1500, 0, 0))
+bar_skeleton2_h.pack(side = "top")
+
+# Noun2 Area
+noun2_label = tk.Label(noun2Frame, text = "Focused Noun-Bag of Plan ID2")
+noun_bag2 = tk.Text(noun2Frame, width=50, height=18)
+bar_noun2_v = tk.Scrollbar(noun2Frame, orient = tk.VERTICAL)
+bar_noun2_v.config(command = noun_bag2.yview)
+noun_bag2.config(yscrollcommand = bar_noun2_v.set)
+# noun_bag2.config(scrollregion=(0, 0, 0, 150))
+noun2_label.pack()
+noun_bag2.pack(side = "left")
+bar_noun2_v.pack(side = "left")
+
+sentence1Subframe = tk.Frame(sentenceFrame, width = 320, height = 600)
+sentence2Subframe = tk.Frame(sentenceFrame, width = 320, height = 600)
+sentence1Subframe.pack(side = "left")
+sentence2Subframe.pack(side = "left")
+
+sentence1_label = tk.Label(sentence1Subframe, text = "Sentence of Plan ID1")
+sentence1 = tk.Text(sentence1Subframe, width = 52, height = 50)
+sentence1_label.pack()
+sentence1.pack()
+
+sentence2_label = tk.Label(sentence2Subframe, text = "Sentence of Plan ID2")
+sentence2 = tk.Text(sentence2Subframe, width = 52, height = 50)
+sentence2_label.pack()
+sentence2.pack()
+
+"""
 offset_x = 320
 offset_y = 0
 
-canvas1 = tk.Canvas(root, width = 320, height = 1000, bg="#eee")
-canvas2 = tk.Canvas(root, width = 320, height = 1000, bg="white")
+canvas1 = tk.Canvas(root, width = 320, height = 360, bg="#eee")
+canvas2 = tk.Canvas(root, width = 320, height = 360, bg="white")
 
-bar_lh = tk.Scrollbar(root, orient=tk.VERTICAL)
-bar_lh.pack(side=tk.LEFT, fill=tk.Y)
-bar_lh.config(command=canvas1.yview)
-bar_rh = tk.Scrollbar(root, orient=tk.VERTICAL)
-bar_rh.pack(side=tk.RIGHT, fill=tk.Y)
-bar_rh.config(command=canvas2.yview)
+bar_lv = tk.Scrollbar(root, orient=tk.VERTICAL)
+bar_lv.config(command=canvas1.yview)
+bar_lv.place(x = 310, y = 30)
+canvas1.config(yscrollcommand=bar_lv.set)
+canvas1.config(scrollregion=(0, 0, 0, 1500)) #スクロール範囲
 
-canvas1.config(yscrollcommand=bar_lh.set)
-canvas1.config(scrollregion=(0,0,0,1500)) #スクロール範囲
+bar_lh = tk.Scrollbar(root, orient=tk.HORIZONTAL)
+bar_lh.config(command=canvas1.xview)
+bar_lh.place(x = 0, y = 360)
+canvas1.config(xscrollcommand=bar_lh.set)
+canvas1.config(scrollregion=(0, 1500, 0, 0)) #スクロール範囲
+
+
+bar_rv = tk.Scrollbar(root, orient=tk.VERTICAL)
+# bar_rh.pack(side=tk.RIGHT, fill=tk.Y)
+bar_rv.config(command=canvas2.yview)
+
+
 # canvas1.pack(side=tk.LEFT, fill=tk.BOTH)
-canvas2.config(yscrollcommand=bar_rh.set)
+canvas2.config(yscrollcommand=bar_rv.set)
 canvas2.config(scrollregion=(0,0,0,1500)) #スクロール範囲
 # canvas2.pack(side=tk.LEFT, fill=tk.BOTH)
 
@@ -306,6 +495,8 @@ id_button2.place(x = 560, y = 25)
 canvas1.place(x = 0, y = 50)
 canvas2.place(x = offset_x, y = offset_y + 50)
 
+"""
+
 # compiled_skeleton2 = compile_skeleton(symbol_skeleton2)
 """
 start_x = 150
@@ -316,5 +507,5 @@ draw_circles(canvas1, 1, skeleton1, coords_vec1)
 draw_circles(canvas2, 2, skeleton2, coords_vec2)
 """
 
-pdb.set_trace()
+# pdb.set_trace()
 root.mainloop()
