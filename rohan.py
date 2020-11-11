@@ -234,7 +234,7 @@ def clicked_canvas2(event):
 
     # print(bags[bag_id])
 
-mecab = MeCab.Tagger("/usr/lib/mecab/dic")
+mecab = MeCab.Tagger("-u /usr/lib/mecab/dic/research_plan_analysis/original_research_plan.dic")
 
 file_name = "conj_symbols.csv"
 with open(file_name) as f:
