@@ -1,9 +1,17 @@
+# -*- coding: utf-8 -*-
+
+import os
 import sys
 import csv
 import re
 import MeCab
 
-import tkinter as tk
+from tkinter import *
+from tkinter import ttk
+from tkinter import filedialog
+from tkinter import messagebox
+
+import tkinter
 import matplotlib.cm as cm
 
 import pdb
@@ -198,13 +206,13 @@ def clicked_canvas1(event):
     noun_bag1.insert('1.0', '\n(' + str(len(bags[bag_id])) + ' words)')
     noun_bag1.insert('1.0', bags[bag_id])
 
-    sentence1.delete('1.0', tk.END)
+    sentence1.delete('1.0', tkinter.END)
     sentence1.tag_configure('RED', foreground = '#ff0000')
     for i in range(0, len(sentence_list1)):
         if(i == bag_id):
-            sentence1.insert(tk.END, sentence_list1[i], 'RED')
+            sentence1.insert(tkinter.END, sentence_list1[i], 'RED')
         else:
-            sentence1.insert(tk.END, sentence_list1[i])
+            sentence1.insert(tkinter.END, sentence_list1[i])
             # print("Do nothing...")
 
     # print(bags[bag_id])
@@ -223,18 +231,20 @@ def clicked_canvas2(event):
     noun_bag2.insert('1.0', '\n(' + str(len(bags[bag_id])) + ' words)')
     noun_bag2.insert('1.0', bags[bag_id])
 
-    sentence2.delete('1.0', tk.END)
+    sentence2.delete('1.0', tkinter.END)
     sentence2.tag_configure('RED', foreground = '#ff0000')
     for i in range(0, len(sentence_list2)):
         if(i == bag_id):
-            sentence2.insert(tk.END, sentence_list2[i], 'RED')
+            sentence2.insert(tkinter.END, sentence_list2[i], 'RED')
         else:
-            sentence2.insert(tk.END, sentence_list2[i])
+            sentence2.insert(tkinter.END, sentence_list2[i])
             # print("Do nothing...")
 
     # print(bags[bag_id])
 
-mecab = MeCab.Tagger("-u /usr/lib/mecab/dic/research_plan_analysis/original_research_plan.dic")
+# mecab = MeCab.Tagger("-u /usr/lib/mecab/dic/original/original.dic")
+# mecab = MeCab.Tagger(r"-O chasen -u .\research_plan_conj.dic")
+mecab = MeCab.Tagger()
 
 file_name = "conj_symbols.csv"
 with open(file_name) as f:
@@ -246,6 +256,12 @@ for i in range(0, len(symbol_data)):
     conj_list.append(symbol_data[i][2].split('、'))
     dir_list.append(symbol_data[i][4])
 
+def choose_file():
+    fType = [("","*")]
+    iDir = os.path.abspath(os.path.dirname(__file__))
+    file_path = filedialog.askopenfilename(filetypes = fType, initialdir = iDir)
+    file_name_val.set(file_path)
+
 def load_file():
     file_name = file_name_input.get()
     global data
@@ -254,6 +270,16 @@ def load_file():
         reader = csv.reader(f)
         data = [row for row in reader]
     print('File loaded!!')
+
+def save_result1():
+    with open('corrected_result.csv', 'a') as f:
+         row_data = id_input1.get() + "," + score1_val.get() + "," + sentence1.get('1.0', 'end -1c')
+         print(row_data, file=f)
+
+def save_result2():
+    with open('corrected_result.csv', 'a') as f:
+         row_data = id_input2.get() + "," + score2_val.get() + "," + sentence2.get('1.0', 'end -1c')
+         print(row_data, file=f)
 
 def draw_skeleton1():
     global skeleton1
@@ -333,120 +359,136 @@ def update_skeleton2():
     coords_vec2 = draw_lines(canvas2, compiled_skeleton2, start_x, start_y, L2)
     draw_circles(canvas2, 1, skeleton2, coords_vec2)
 
+# width = 1280
+width = 640
+height = 600
 
-root = tk.Tk()
-root.title("Skeleton Visualizer")
-root.geometry("1280x600")
+root1 = Tk()
+root1.title("ROHAN Window1")
+root1.geometry(str(width) + 'x' + str(height))
 
-mainFrame = tk.Frame(root, width = 1280, height = 600, bg = "gray")
-mainFrame.pack()
+root2 = Tk()
+root2.title("ROHAN Window2")
+root2.geometry(str(width) + 'x' + str(height))
 
-visualFrame = tk.Frame(mainFrame, width = 640, height = 600)
-sentenceFrame = tk.Frame(mainFrame, width = 640, height = 600, bg = "blue")
-visualFrame.pack(side = "left")
-sentenceFrame.pack(side = "left")
+mainFrame1 = ttk.Frame(root1, width = width, height = height)
+mainFrame1.pack()
 
-skeleton1Frame = tk.Frame(visualFrame, width = 320, height = 600, bg = "gray")
-skeleton2Frame = tk.Frame(visualFrame, width = 320, height = 600, bg = "white")
-skeleton1Frame.pack(side = "left")
-skeleton2Frame.pack(side = "left")
+mainFrame2 = ttk.Frame(root2, width = width, height = height)
+mainFrame2.pack()
+
+visualFrame1 = ttk.Frame(mainFrame1, width = width/2, height = height)
+sentenceFrame1 = ttk.Frame(mainFrame1, width = width/2, height = height)
+visualFrame1.pack(side = "left")
+sentenceFrame1.pack(side = "left")
+
+visualFrame2 = ttk.Frame(mainFrame2, width = width/2, height = height)
+sentenceFrame2 = ttk.Frame(mainFrame2, width = width/2, height = height)
+visualFrame2.pack(side = "left")
+sentenceFrame2.pack(side = "left")
+
+skeleton1Frame = ttk.Frame(visualFrame1, width = width/2, height = height)
+skeleton1Frame.pack(side = "left", padx=0)
+
+skeleton2Frame = ttk.Frame(visualFrame2, width = width/2, height = height)
+skeleton2Frame.pack(side = "left", padx=0)
 
 # Skeleton1 Area
-button1Frame = tk.Frame(skeleton1Frame, width = 320, height = 50)
-display1Frame = tk.Frame(skeleton1Frame, width = 320, height = 420)
-noun1Frame = tk.Frame(skeleton1Frame, width = 320, height = 130)
-button1Frame.pack()
-display1Frame.pack()
-noun1Frame.pack()
+button1Frame = ttk.Frame(skeleton1Frame, width = width/2, height = 50)
+display1Frame = ttk.Frame(skeleton1Frame, width = width/2, height = 420)
+noun1Frame = ttk.Frame(skeleton1Frame, width = width/2, height = 130)
+button1Frame.pack(padx=0)
+display1Frame.pack(padx=0)
+noun1Frame.pack(padx=0)
 
 # Button1 Area
-file_name_label = tk.Label(button1Frame, text = 'Input File Name: ')
-file_name_input = tk.Entry(button1Frame, text = 'File Name', width = 16)
-file_name_button = tk.Button(button1Frame, text = 'Load', width = 4, height = 1, bd = 1, command = load_file)
-"""
-file_name_label.pack(side = "left")
-file_name_input.pack(side = "left")
-file_name_button.pack(side = "left")
-"""
-file_name_label.place(x = 5, y = 2)
-file_name_input.place(x = 105, y = 2)
-file_name_button.place(x = 245, y = 0)
+file_name_label = ttk.Label(button1Frame, text = 'File Name: ')
+file_name_val = StringVar()
+file_name_input = ttk.Entry(button1Frame, textvariable = file_name_val)
+file_choose_button = ttk.Button(button1Frame, text = 'Choose', command = choose_file)
+file_load_button = ttk.Button(button1Frame, text = 'Load', command = load_file)
 
-id_label1 = tk.Label(button1Frame, text = 'Input Plan ID1: ')
-id_input1 = tk.Entry(button1Frame, text = 'Plan ID1', width = 16)
-id_button1 = tk.Button(button1Frame, text = 'Load', width = 4, height = 1, bd = 1, command = draw_skeleton1)
-"""
-id_label1.pack(side = "left")
-id_input1.pack(side = "left")
-id_button1.pack(side = "left")
-"""
-id_label1.place(x = 15, y = 30)
-id_input1.place(x = 105, y = 30)
-id_button1.place(x = 245, y = 25)
+file_name_label.grid(row=0, column=0, padx=0)
+file_name_input.grid(row=0, column=1, padx=0)
+file_choose_button.grid(row=0, column=2, padx=0)
+file_load_button.grid(row=1, column=2, padx=0)
+
+id_label1 = ttk.Label(button1Frame, text = 'ID1: ')
+id_input1 = ttk.Entry(button1Frame, text = 'Plan ID1')
+id_button1 = ttk.Button(button1Frame, text = 'Load', command = draw_skeleton1)
+
+id_label1.grid(row=2, column=0, padx=0)
+id_input1.grid(row=2, column=1, padx=0)
+id_button1.grid(row=2, column=2, padx=0)
 
 # Display1 Area
-display1Subframe = tk.Frame(display1Frame, width = 320, height = 420)
-canvas1 = tk.Canvas(display1Subframe, width = 305, height = 405, bg = "white")
-bar_skeleton1_v = tk.Scrollbar(display1Subframe, orient = tk.VERTICAL)
+display1Subframe = ttk.Frame(display1Frame, width = width/2, height = 420)
+canvas1 = tkinter.Canvas(display1Subframe, width = width/2 - 10, height = 405, bg = "white")
+bar_skeleton1_v = tkinter.Scrollbar(display1Subframe, orient = tkinter.VERTICAL, width = 10)
 bar_skeleton1_v.config(command = canvas1.yview)
 canvas1.config(yscrollcommand = bar_skeleton1_v.set)
 canvas1.config(scrollregion=(0, 0, 0, 1500))
 canvas1.pack(side = "left")
 bar_skeleton1_v.pack(side = "left")
 display1Subframe.pack()
-bar_skeleton1_h = tk.Scrollbar(display1Frame, orient = tk.HORIZONTAL)
+bar_skeleton1_h = tkinter.Scrollbar(display1Frame, orient = tkinter.HORIZONTAL, width = 10)
 bar_skeleton1_h.config(command = canvas1.xview)
 canvas1.config(xscrollcommand = bar_skeleton1_h.set)
 canvas1.config(scrollregion=(0, 1500, 0, 0))
 bar_skeleton1_h.pack(side = "top")
 
 # Noun1 Area
-noun1_label = tk.Label(noun1Frame, text = "Focused Noun-Bag of Plan ID1")
-noun_bag1 = tk.Text(noun1Frame, width=50, height=18)
-bar_noun1_v = tk.Scrollbar(noun1Frame, orient = tk.VERTICAL)
-bar_noun1_v.config(command = noun_bag1.yview)
+noun1_label = ttk.Label(noun1Frame, text = "Focused Noun-Bag of Plan ID1")
+noun_bag1 = tkinter.Text(noun1Frame, width = 34, height = 18)
+# noun_bag1 = tkinter.Text(noun1Frame)
+bar_noun1_v = tkinter.Scrollbar(noun1Frame, orient = tkinter.VERTICAL)
+bar_noun1_v.config(command = noun_bag1.yview, width = 10)
 noun_bag1.config(yscrollcommand = bar_noun1_v.set)
 # noun_bag1.config(scrollregion=(0, 0, 0, 150))
+
 noun1_label.pack()
 noun_bag1.pack(side = "left")
 bar_noun1_v.pack(side = "left")
 
 # Skeleton2 Area
-button2Frame = tk.Frame(skeleton2Frame, width = 320, height = 50)
-display2Frame = tk.Frame(skeleton2Frame, width = 320, height = 420)
-noun2Frame = tk.Frame(skeleton2Frame, width = 320, height = 130)
+button2Frame = ttk.Frame(skeleton2Frame, width = width/2, height = 50)
+display2Frame = ttk.Frame(skeleton2Frame, width = width/2, height = 420)
+noun2Frame = ttk.Frame(skeleton2Frame, width = width/2, height = 130)
 button2Frame.pack()
 display2Frame.pack()
 noun2Frame.pack()
 
 # Button2 Area
-id_label2 = tk.Label(root, text = 'Input Plan ID2: ')
-id_input2 = tk.Entry(root, text = 'Plan ID2', width = 16)
-id_button2 = tk.Button(root, text = 'Load', width = 4, height = 1, bd = 1, command = draw_skeleton2)
-id_label2.place(x = 335, y = 30)
-id_input2.place(x = 425, y = 30)
-id_button2.place(x = 565, y = 25)
+id_label2 = ttk.Label(button2Frame, text = 'ID2: ')
+id_input2 = ttk.Entry(button2Frame, text = 'Plan ID2')
+id_button2 = ttk.Button(button2Frame, text = 'Load', command = draw_skeleton2)
+empty_label = ttk.Label(button2Frame, text = '')
+empty_label.grid(row=0, column=0, pady=3)
+id_label2.grid(row=1, column=0, padx=5)
+id_input2.grid(row=1, column=1)
+id_button2.grid(row=1, column=2)
 
 # Display2 Area
-display2Subframe = tk.Frame(display2Frame, width = 320, height = 420)
-canvas2 = tk.Canvas(display2Subframe, width = 305, height = 405, bg = "white")
-bar_skeleton2_v = tk.Scrollbar(display2Subframe, orient = tk.VERTICAL)
+display2Subframe = ttk.Frame(display2Frame, width = width/2, height = 420)
+canvas2 = tkinter.Canvas(display2Subframe, width = width/2 - 10, height = 405, bg = "white")
+bar_skeleton2_v = tkinter.Scrollbar(display2Subframe, orient = tkinter.VERTICAL, width=10)
 bar_skeleton2_v.config(command = canvas2.yview)
 canvas2.config(yscrollcommand = bar_skeleton2_v.set)
 canvas2.config(scrollregion=(0, 0, 0, 1500))
 canvas2.pack(side = "left")
 bar_skeleton2_v.pack(side = "left")
 display2Subframe.pack()
-bar_skeleton2_h = tk.Scrollbar(display2Frame, orient = tk.HORIZONTAL)
+bar_skeleton2_h = tkinter.Scrollbar(display2Frame, orient = tkinter.HORIZONTAL, width=10)
 bar_skeleton2_h.config(command = canvas2.xview)
 canvas2.config(xscrollcommand = bar_skeleton2_h.set)
 canvas2.config(scrollregion=(0, 1500, 0, 0))
 bar_skeleton2_h.pack(side = "top")
 
 # Noun2 Area
-noun2_label = tk.Label(noun2Frame, text = "Focused Noun-Bag of Plan ID2")
-noun_bag2 = tk.Text(noun2Frame, width=50, height=18)
-bar_noun2_v = tk.Scrollbar(noun2Frame, orient = tk.VERTICAL)
+noun2_label = ttk.Label(noun2Frame, text = "Focused Noun-Bag of Plan ID2")
+noun_bag2 = tkinter.Text(noun2Frame, width = 34, height = 18)
+# noun_bag2 = tkinter.Text(noun2Frame)
+bar_noun2_v = tkinter.Scrollbar(noun2Frame, orient = tkinter.VERTICAL, width=10)
 bar_noun2_v.config(command = noun_bag2.yview)
 noun_bag2.config(yscrollcommand = bar_noun2_v.set)
 # noun_bag2.config(scrollregion=(0, 0, 0, 150))
@@ -454,104 +496,46 @@ noun2_label.pack()
 noun_bag2.pack(side = "left")
 bar_noun2_v.pack(side = "left")
 
-sentence1Subframe = tk.Frame(sentenceFrame, width = 320, height = 600)
-sentence2Subframe = tk.Frame(sentenceFrame, width = 320, height = 600)
+sentence1Subframe = ttk.Frame(sentenceFrame1, width = width/2, height = 600)
+sentence2Subframe = ttk.Frame(sentenceFrame2, width = width/2, height = 600)
 sentence1Subframe.pack(side = "left")
 sentence2Subframe.pack(side = "left")
 
-sentence1ButtonFrame = tk.Frame(sentence1Subframe, width = 320, height = 50)
-sentence1_label = tk.Label(sentence1ButtonFrame, text = "Sentence of Plan ID1")
-update_skeleton1_button = tk.Button(sentence1ButtonFrame, text = 'Update', width = 4, height = 1, bd = 1, command = update_skeleton1)
-sentence1 = tk.Text(sentence1Subframe, width = 52, height = 50)
-sentence1_label.pack(side = "left")
-update_skeleton1_button.pack(side = "left")
+sentence1ButtonFrame = ttk.Frame(sentence1Subframe, width = width/2, height = 50)
+sentence1_label = ttk.Label(sentence1ButtonFrame, text = "Sentence of Plan ID1")
+update_skeleton1_button = ttk.Button(sentence1ButtonFrame, text = 'Update', command = update_skeleton1)
+sentence1 = tkinter.Text(sentence1Subframe, width = 34, height = 50)
+score1_label = ttk.Label(sentence1ButtonFrame, text = "Score: ")
+score1_val = StringVar()
+scores_vec = ['1', '2', '3', '4', '5']
+combobox1 = ttk.Combobox(sentence1ButtonFrame, textvariable=score1_val, values=scores_vec, width=5)
+save1_button = ttk.Button(sentence1ButtonFrame, text = "Save", command = save_result1)
+
+sentence1_label.grid(row=0, column=0, padx=0)
+update_skeleton1_button.grid(row=0, column=1, padx=0)
+score1_label.grid(row=1, column=0, padx=0)
+combobox1.grid(row=1, column=1, padx=0, sticky=tkinter.E + tkinter.W)
+save1_button.grid(row=2, column=1, padx=0, sticky=tkinter.E + tkinter.W)
 sentence1ButtonFrame.pack()
 sentence1.pack(side = "top")
 
-sentence2ButtonFrame = tk.Frame(sentence2Subframe, width = 320, height = 50)
-sentence2_label = tk.Label(sentence2ButtonFrame, text = "Sentence of Plan ID2")
-update_skeleton2_button = tk.Button(sentence2ButtonFrame, text = 'Update', width = 4, height = 1, bd = 1, command = update_skeleton2)
-sentence2 = tk.Text(sentence2Subframe, width = 52, height = 50)
-sentence2_label.pack(side = "left")
-update_skeleton2_button.pack(side = "left")
+sentence2ButtonFrame = ttk.Frame(sentence2Subframe, width = width/2, height = 50)
+sentence2_label = ttk.Label(sentence2ButtonFrame, text = "Sentence of Plan ID2")
+update_skeleton2_button = ttk.Button(sentence2ButtonFrame, text = 'Update', command = update_skeleton2)
+sentence2 = tkinter.Text(sentence2Subframe, width = 34, height = 50)
+score2_label = ttk.Label(sentence2ButtonFrame, text = "Score: ")
+score2_val = StringVar()
+combobox2 = ttk.Combobox(sentence2ButtonFrame, textvariable=score2_val, values=scores_vec, width=5)
+save2_button = ttk.Button(sentence2ButtonFrame, text = "Save", command = save_result2)
+
+sentence2_label.grid(row=0, column=0, padx=0)
+update_skeleton2_button.grid(row=0, column=1, padx=0)
+score2_label.grid(row=1, column=0, padx=0)
+combobox2.grid(row=1, column=1, padx=0, sticky=tkinter.E + tkinter.W)
+save2_button.grid(row=2, column=1, padx=0, sticky=tkinter.E + tkinter.W)
 sentence2ButtonFrame.pack()
 sentence2.pack(side = "top")
 
-"""
-offset_x = 320
-offset_y = 0
-
-canvas1 = tk.Canvas(root, width = 320, height = 360, bg="#eee")
-canvas2 = tk.Canvas(root, width = 320, height = 360, bg="white")
-
-bar_lv = tk.Scrollbar(root, orient=tk.VERTICAL)
-bar_lv.config(command=canvas1.yview)
-bar_lv.place(x = 310, y = 30)
-canvas1.config(yscrollcommand=bar_lv.set)
-canvas1.config(scrollregion=(0, 0, 0, 1500)) #スクロール範囲
-
-bar_lh = tk.Scrollbar(root, orient=tk.HORIZONTAL)
-bar_lh.config(command=canvas1.xview)
-bar_lh.place(x = 0, y = 360)
-canvas1.config(xscrollcommand=bar_lh.set)
-canvas1.config(scrollregion=(0, 1500, 0, 0)) #スクロール範囲
-
-
-bar_rv = tk.Scrollbar(root, orient=tk.VERTICAL)
-# bar_rh.pack(side=tk.RIGHT, fill=tk.Y)
-bar_rv.config(command=canvas2.yview)
-
-
-# canvas1.pack(side=tk.LEFT, fill=tk.BOTH)
-canvas2.config(yscrollcommand=bar_rv.set)
-canvas2.config(scrollregion=(0,0,0,1500)) #スクロール範囲
-# canvas2.pack(side=tk.LEFT, fill=tk.BOTH)
-
-noun_bag_label1 = tk.Label(root, text = 'Noun Bag for Plan ID1')
-noun_bag_label1.place(x = 640, y = 30)
-noun_bag_label2 = tk.Label(root, text = 'Noun Bag for Plan ID2')
-noun_bag_label2.place(x = 640, y = 270)
-
-noun_bag1 = tk.Text(root, width=50, height=18)
-noun_bag1.place(x = 640, y = 50)
-noun_bag2 = tk.Text(root, width=50, height=18)
-noun_bag2.place(x = 640, y = 290)
-
-file_name_label = tk.Label(root, text = 'Input File Name: ')
-file_name_input = tk.Entry(root, text = 'File Name', width = 16)
-file_name_button = tk.Button(root, text = 'Load', width = 4, height = 1, bd = 1, command = load_file)
-file_name_label.place(x = 20, y = 2)
-file_name_input.place(x = 120, y = 2)
-file_name_button.place(x = 260, y = 0)
-
-id_label1 = tk.Label(root, text = 'Input Plan ID1: ')
-id_input1 = tk.Entry(root, text = 'Plan ID1', width = 16)
-id_button1 = tk.Button(root, text = 'Load', width = 4, height = 1, bd = 1, command = draw_skeleton1)
-id_label1.place(x = 20, y = 30)
-id_input1.place(x = 120, y = 30)
-id_button1.place(x = 260, y = 25)
-
-id_label2 = tk.Label(root, text = 'Input Plan ID2: ')
-id_input2 = tk.Entry(root, text = 'Plan ID2', width = 16)
-id_button2 = tk.Button(root, text = 'Load', width = 4, height = 1, bd = 1, command = draw_skeleton2)
-id_label2.place(x = 320, y = 30)
-id_input2.place(x = 420, y = 30)
-id_button2.place(x = 560, y = 25)
-
-canvas1.place(x = 0, y = 50)
-canvas2.place(x = offset_x, y = offset_y + 50)
-
-"""
-
-# compiled_skeleton2 = compile_skeleton(symbol_skeleton2)
-"""
-start_x = 150
-start_y = 100
-coords_vec1 = draw_lines(canvas1, compiled_skeleton1, start_x, start_y, L1)
-coords_vec2 = draw_lines(canvas2, compiled_skeleton2, start_x, start_y, L2)
-draw_circles(canvas1, 1, skeleton1, coords_vec1)
-draw_circles(canvas2, 2, skeleton2, coords_vec2)
-"""
-
 # pdb.set_trace()
-root.mainloop()
+root1.mainloop()
+root2.mainloop()
