@@ -33,22 +33,21 @@ class ProcessWindow(tk.Frame):
     def create_ui(self):
 
         self.visual_frame = ttk.Frame(self)
-        self.visual_frame.pack(side = "left")
-        self.visual_frame.columnconfigure(0, weight = 1, uniform = "group1")
- 
-        self.sentence_frame = ttk.Frame(self)
-        self.sentence_frame.pack(side = "left")
+        self.visual_frame.pack(side = "left", expand = True, fill = tk.BOTH)
 
+        self.sentence_frame = ttk.Frame(self)
+        self.sentence_frame.pack(side = "left", expand = True, fill = tk.BOTH)
 
         # Visual Window
 
         # Term Area(Currently noun area)
         self.noun_frame = ttk.Frame(self.visual_frame)
         # self.noun_frame.grid(row = 2, column = 0, sticky = tk.W + tk.E)
-        self.noun_frame.grid(row = 2, column = 0, sticky = tk.W + tk.E)
+        self.noun_frame.grid(row = 2, column = 0)
+        # self.noun_frame.columnconfigure(0, weight = 1, uniform = "group1")
 
         self.subframe2 = ttk.Frame(self.noun_frame)
-        self.subframe2.pack()
+        self.subframe2.pack(expand = True, fill = tk.BOTH)
         self.noun_label = ttk.Label(self.subframe2, text = "Focused Noun-Bag of Plan ID")
         self.noun_bag = tkinter.Text(self.subframe2)
 
@@ -61,34 +60,44 @@ class ProcessWindow(tk.Frame):
 
         # Skeleton Area
         self.skeleton_frame = ttk.Frame(self.visual_frame)
-        self.skeleton_frame.grid(row = 1, column = 0, sticky = tk.W + tk.E)
+        self.skeleton_frame.grid(row = 1, column = 0)
+        self.visual_frame.columnconfigure(0, weight = 1, uniform = "group1")
 
         self.subframe1 = ttk.Frame(self.skeleton_frame)
         self.subframe1.grid(row = 0, column = 0)
+        self.subframe1.columnconfigure(0, weight = 1, uniform = "group1")
+        # self.subframe1.columnconfigure(1, weight = 1, uniform = "group1")
+
+        # self.subframe1.pack(expand = True, fill = tk.BOTH)
         self.canvas = tkinter.Canvas(self.subframe1, bg = "white")
         self.canvas.config(scrollregion=(-1500, -1500, 1500, 1500))
         self.canvas.grid(row = 0, column = 0)
+        # self.canvas.columnconfigure(0, weight = 1, uniform = "group1")
+        # self.canvas.pack(expand = True, fill = tk.BOTH)
 
         self.bar_v = tkinter.Scrollbar(self.subframe1, orient = tkinter.VERTICAL, width = 10)
         self.bar_v.config(command = self.canvas.yview)
         self.canvas.config(yscrollcommand = self.bar_v.set)
         self.bar_v.grid(row = 0, column = 1, sticky = tk.N + tk.S)
+        # self.bar_v.pack(side = "left", expand = True, fill = tk.BOTH)
 
         self.bar_h = tkinter.Scrollbar(self.subframe1, orient = tkinter.HORIZONTAL, width = 10)
         self.bar_h.config(command = self.canvas.xview)
         self.canvas.config(xscrollcommand = self.bar_h.set)
         self.bar_h.grid(row = 1, column = 0, sticky = tk.W + tk.E)
+        # self.bar_h.pack(side = "top", expand = True, fill = tk.BOTH)
 
         # Button Area
         self.button_frame = ttk.Frame(self.visual_frame)
         self.button_frame.grid(row = 0, column = 0, sticky = tk.W + tk.E)
+        self.button_frame.columnconfigure(0, weight = 1, uniform = "group1")
 
         self.id_label = ttk.Label(self.button_frame, text = 'Plan ID: ')
         self.id_input = ttk.Entry(self.button_frame, text = 'Plan ID')
         self.id_button = ttk.Button(self.button_frame, text = 'Load', command = self.draw_skeleton)
-        self.id_label.pack(side = "left")
-        self.id_input.pack(side = "left")
-        self.id_button.pack(side = "left")
+        self.id_label.pack(side = "left", expand = True, fill = tk.BOTH)
+        self.id_input.pack(side = "left", expand = True, fill = tk.BOTH)
+        self.id_button.pack(side = "left", expand = True, fill = tk.BOTH)
 
         # Sentence Window
         sentence_button_frame = ttk.Frame(self.sentence_frame)
@@ -104,9 +113,9 @@ class ProcessWindow(tk.Frame):
 
         sentence_label.grid(row=0, column=0, padx=0)
         update_skeleton_button.grid(row=0, column=1, padx=0)
-        score_label.grid(row=1, column=0, padx=0)
-        combobox.grid(row=1, column=1, padx=0, sticky=tkinter.E + tkinter.W)
-        save_button.grid(row=2, column=1, padx=0, sticky=tkinter.E + tkinter.W)
+        score_label.grid(row=0, column=2, padx=0)
+        combobox.grid(row=0, column=3, padx=0, sticky=tkinter.E + tkinter.W)
+        save_button.grid(row=0, column=4, padx=0, sticky=tkinter.E + tkinter.W)
         sentence_button_frame.pack()
 
     def extract_experiments_info(self, row_count):
