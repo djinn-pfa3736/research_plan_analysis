@@ -13,12 +13,12 @@ import matplotlib.cm as cm
 import pdb
 
 class ProcessWindow(tk.Frame):
+# class ProcessWindow:
 
     def __init__(self, data, conj_list, dir_list, master = None):
         super().__init__(master)
 
         self.pack()
-        self.master.geometry()
         self.master.title("Rohan Process Window")
 
         self.data = data
@@ -40,64 +40,65 @@ class ProcessWindow(tk.Frame):
 
         # Visual Window
 
-        # Term Area(Currently noun area)
-        self.noun_frame = ttk.Frame(self.visual_frame)
-        # self.noun_frame.grid(row = 2, column = 0, sticky = tk.W + tk.E)
-        self.noun_frame.grid(row = 2, column = 0)
-        # self.noun_frame.columnconfigure(0, weight = 1, uniform = "group1")
-
-        self.subframe2 = ttk.Frame(self.noun_frame)
-        self.subframe2.pack(expand = True, fill = tk.BOTH)
-        self.noun_label = ttk.Label(self.subframe2, text = "Focused Noun-Bag of Plan ID")
-        self.noun_bag = tkinter.Text(self.subframe2)
-
-        self.bar_noun_v = tkinter.Scrollbar(self.subframe2, orient = tkinter.VERTICAL)
-        self.bar_noun_v.config(command = self.noun_bag.yview, width = 10)
-        self.noun_bag.config(yscrollcommand = self.bar_noun_v.set)
-        self.noun_label.grid(row = 0, column = 0)
-        self.noun_bag.grid(row = 1, column = 0)
-        self.bar_noun_v.grid(row = 1, column = 1, sticky = tk.N + tk.S)
-
-        # Skeleton Area
-        self.skeleton_frame = ttk.Frame(self.visual_frame)
-        self.skeleton_frame.grid(row = 1, column = 0)
-        self.visual_frame.columnconfigure(0, weight = 1, uniform = "group1")
-
-        self.subframe1 = ttk.Frame(self.skeleton_frame)
-        self.subframe1.grid(row = 0, column = 0)
-        self.subframe1.columnconfigure(0, weight = 1, uniform = "group1")
-        # self.subframe1.columnconfigure(1, weight = 1, uniform = "group1")
-
-        # self.subframe1.pack(expand = True, fill = tk.BOTH)
-        self.canvas = tkinter.Canvas(self.subframe1, bg = "white")
-        self.canvas.config(scrollregion=(-1500, -1500, 1500, 1500))
-        self.canvas.grid(row = 0, column = 0)
-        # self.canvas.columnconfigure(0, weight = 1, uniform = "group1")
-        # self.canvas.pack(expand = True, fill = tk.BOTH)
-
-        self.bar_v = tkinter.Scrollbar(self.subframe1, orient = tkinter.VERTICAL, width = 10)
-        self.bar_v.config(command = self.canvas.yview)
-        self.canvas.config(yscrollcommand = self.bar_v.set)
-        self.bar_v.grid(row = 0, column = 1, sticky = tk.N + tk.S)
-        # self.bar_v.pack(side = "left", expand = True, fill = tk.BOTH)
-
-        self.bar_h = tkinter.Scrollbar(self.subframe1, orient = tkinter.HORIZONTAL, width = 10)
-        self.bar_h.config(command = self.canvas.xview)
-        self.canvas.config(xscrollcommand = self.bar_h.set)
-        self.bar_h.grid(row = 1, column = 0, sticky = tk.W + tk.E)
-        # self.bar_h.pack(side = "top", expand = True, fill = tk.BOTH)
-
         # Button Area
         self.button_frame = ttk.Frame(self.visual_frame)
-        self.button_frame.grid(row = 0, column = 0, sticky = tk.W + tk.E)
-        self.button_frame.columnconfigure(0, weight = 1, uniform = "group1")
+        self.button_frame.pack(expand = True, fill = tk.BOTH)
 
         self.id_label = ttk.Label(self.button_frame, text = 'Plan ID: ')
         self.id_input = ttk.Entry(self.button_frame, text = 'Plan ID')
         self.id_button = ttk.Button(self.button_frame, text = 'Load', command = self.draw_skeleton)
+
+        # Button Area Packing
         self.id_label.pack(side = "left", expand = True, fill = tk.BOTH)
         self.id_input.pack(side = "left", expand = True, fill = tk.BOTH)
         self.id_button.pack(side = "left", expand = True, fill = tk.BOTH)
+
+        # Skeleton Area
+        self.skeleton_frame = ttk.Frame(self.visual_frame)
+        self.skeleton_frame.pack(expand = True, fill = tk.BOTH)
+
+        self.skeleton_subframe = ttk.Frame(self.skeleton_frame)
+        self.skeleton_subframe.pack(expand = True, fill = tk.BOTH)
+
+        self.canvas = tkinter.Canvas(self.skeleton_subframe, bg = "white")
+        # self.canvas = tkinter.Canvas(self.skeleton_frame, bg = "white")
+        self.canvas.config(scrollregion=(-1500, -1500, 1500, 1500))
+
+        self.bar_h = tkinter.Scrollbar(self.skeleton_subframe, orient = tkinter.HORIZONTAL)
+        self.bar_h.config(command = self.canvas.xview)
+
+        # self.bar_v = tkinter.Scrollbar(self.skeleton_subframe, orient = tkinter.VERTICAL)
+        self.bar_v = tkinter.Scrollbar(self.skeleton_subframe, orient = tkinter.VERTICAL)
+        self.bar_v.config(command = self.canvas.yview)
+        self.canvas.config(yscrollcommand = self.bar_v.set, xscrollcommand = self.bar_h.set)
+
+        # Skeleton Area Packing
+        self.bar_h.pack(side = tk.TOP, expand = True, fill = tk.BOTH)
+        self.bar_v.pack(side = tk.RIGHT, expand = True, fill = tk.BOTH)
+        self.canvas.pack(side = tk.LEFT, expand = True, fill = tk.BOTH)
+        # self.canvas.place(anchor = tk.NW, relwidth = 1, relheight = 1)
+        """
+        self.bar_h.grid(row = 0, column = 0)
+        self.canvas.grid(row = 1, column = 0, sticky = tk.W + tk.E)
+        self.bar_v.grid(row = 1, column = 1)
+        """
+
+        # Term Area(Currently noun area)
+        self.noun_frame = ttk.Frame(self.visual_frame)
+        self.noun_frame.pack(expand = True, fill = tk.BOTH)
+
+        self.noun_label = ttk.Label(self.noun_frame, text = "Focused Noun-Bag of Plan ID")
+        self.noun_bag = tkinter.Text(self.noun_frame)
+
+        self.bar_noun_v = tkinter.Scrollbar(orient = tkinter.VERTICAL)
+        # self.bar_noun_v.grid(row = 1, column = 1, sticky = tk.N + tk.S)
+        self.bar_noun_v.pack(expand = True, fill = tk.BOTH)
+        self.noun_bag.config(yscrollcommand = self.bar_noun_v.set)
+
+        # Term Area Packing
+        self.noun_label.pack(expand = True, fill = tk.BOTH)
+        self.bar_noun_v.pack(expand = True, fill = tk.BOTH)
+        self.noun_bag.pack(expand = True, fill = tk.BOTH)
 
         # Sentence Window
         sentence_button_frame = ttk.Frame(self.sentence_frame)
