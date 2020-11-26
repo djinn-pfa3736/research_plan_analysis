@@ -71,7 +71,7 @@ class MainControl(tk.Frame):
             conj_list.append(symbol_data[i][2].split('、'))
             dir_list.append(symbol_data[i][4])
 
-        self.new_window = tk.Tk()
+        self.new_window = tk.Toplevel()
         process_window = rohan_subwindow.ProcessWindow(data = self.data, conj_list = conj_list, dir_list = dir_list, master = self.new_window)
 
 if __name__ == "__main__":

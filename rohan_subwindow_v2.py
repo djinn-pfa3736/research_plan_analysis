@@ -40,6 +40,8 @@ class ProcessWindow(tk.Frame):
         self.id_list = []
 
         self.tag_skeleton_dict = {}
+        self.sentence_list = []
+        self.tag_list = []
 
     def create_ui(self):
 
@@ -92,13 +94,6 @@ class ProcessWindow(tk.Frame):
         self.canvas.pack(side = tk.LEFT, expand = True, fill = tk.BOTH)
 
         self.canvas.bind('<Button-1>', self.canvas_clicked)
-
-        # self.canvas.place(anchor = tk.NW, relwidth = 1, relheight = 1)
-        """
-        self.bar_h.grid(row = 0, column = 0)
-        self.canvas.grid(row = 1, column = 0, sticky = tk.W + tk.E)
-        self.bar_v.grid(row = 1, column = 1)
-        """
 
         # Term Area(Currently noun area)
         self.noun_frame = ttk.Frame(self.visual_frame)
@@ -161,17 +156,20 @@ class ProcessWindow(tk.Frame):
                     experiment_content += c
         return experiment_title_list, experiment_content_list
 
-    def extract_skeleton(self, parse_results, id):
+    def extract_skeleton(self, parse_results):
 
         noun = []
         conj = []
         keywords = []
         skeleton = []
         noun_count = 0
-        self.sentence_list = []
+
         sentence = ""
-        for res in parse_results.split('\n'):
+        res_list = parse_results.split('\n')
+        for i in range(len(res_list)):
+            res = res_list[i]
             cols = res.split('\t')
+
             if(1 < len(cols)):
                 parts = cols[1].split(',')
                 # print(cols)
@@ -184,8 +182,7 @@ class ProcessWindow(tk.Frame):
                     skeleton.append(noun)
                     skeleton.append(cols[0])
                     sentence = sentence + cols[0]
-                    if(id == 1):
-                        self.sentence_list.append(sentence)
+                    self.sentence_list.append(sentence)
 
                     sentence = ""
                     noun = []
@@ -194,6 +191,9 @@ class ProcessWindow(tk.Frame):
 
                 if(parts[0].startswith('名詞') or parts[0].startswith('接続詞')):
                     keywords.append(cols[0])
+            elif i != len(res_list) - 1:
+                sentence = sentence + '\n'
+
         skeleton.append(noun)
         self.sentence_list.append(sentence)
 
@@ -202,20 +202,20 @@ class ProcessWindow(tk.Frame):
         return skeleton
     # print(data[i][0] + "\t" + str(skeleton) + "\t" + data[i][12] + "\t" + data[i][13])
 
-    def extract_symbol_skeleton(self):
-        ind_vec = [i for i in range(0, len(self.skeleton))]
+    def extract_symbol_skeleton(self, skeleton):
+        ind_vec = [i for i in range(0, len(skeleton))]
         symbol_skeleton = []
         for i in ind_vec[1::2]:
             # symbol_skeleton.append(len(skeleton[i - 1]))
             symbol_skeleton.append('N')
             unk_flag = 1
             for j in range(0, len(self.conj_list)):
-                if(self.skeleton[i] in self.conj_list[j]):
+                if(skeleton[i] in self.conj_list[j]):
                     unk_flag = 0
                     symbol_skeleton.append(self.dir_list[j])
             if(unk_flag == 1):
-                symbol_skeleton.append(self.skeleton[i] + ':?')
-                pdb.set_trace()
+                symbol_skeleton.append(skeleton[i] + ':?')
+                # pdb.set_trace()
         # symbol_skeleton.append(len(skeleton[-1]))
         symbol_skeleton.append('N')
         return symbol_skeleton
@@ -288,7 +288,7 @@ class ProcessWindow(tk.Frame):
                 coords_vec.append((current_x, current_y))
         return coords_vec
 
-    def draw_circles(self, skeleton, coords_vec):
+    def draw_circles(self, skeleton, skeleton_id, coords_vec):
         radius_vec = [len(x) for x in skeleton[0::2]]
 
         for i in range(0, len(coords_vec)):
@@ -299,8 +299,10 @@ class ProcessWindow(tk.Frame):
             color_offset = 255
             html_color = '#%02X%02X%02X' % (int(color_vec[0]*color_offset), int(color_vec[1]*color_offset), int(color_vec[2]*color_offset))
             # pdb.set_trace()
-            print(self.last_tag_id)
-            tags_id = 'nounbag_' + str(self.last_tag_id)
+            # tags_id = 'nounbag_' + str(self.last_tag_id)
+
+            tags_id = 'nounbag_' + str(skeleton_id) + '_' + str(i) + '_' + str(self.last_tag_id)
+            self.tag_list.append(tags_id)
             self.last_tag_id += 1
 
             # canvas.create_oval(coord[0] - r, coord[1] - r, coord[0] + r, coord[1] + r, fill=html_color, outline="#777", width=5, tags=tags_id)
@@ -312,27 +314,32 @@ class ProcessWindow(tk.Frame):
 
         return coords_vec[-1][0], coords_vec[-1][1]
 
-#     def clicked_canvas(self, event):
+    # def clicked_canvas(self, event):
     def canvas_clicked(self, event):
         # print((event.x, event.y))
-        print((self.bar_h.get(), self.bar_v.get()))
+        # print((self.bar_h.get(), self.bar_v.get()))
         offset_x = 3000*(self.bar_h.get()[0] - 0.500)
         offset_y = 3000*(self.bar_v.get()[0] - 0.500)
         self.last_pos_x = self.bar_h.get()[0]
         self.last_pos_y = self.bar_v.get()[0]
 
-        # print((offset_x, offset_y))
         x = event.x + offset_x
-        y = event.y - offset_y
+        y = event.y + offset_y
+
+        # print((x, y))
+
         # item_id = self.canvas.find_closest(event.x, event.y)
         item_id = self.canvas.find_closest(x, y)
+        # print(self.canvas.find_all())
         print(item_id)
         tag = self.canvas.gettags(item_id[0])[0]
         item = self.canvas.type(tag)
-        _, bag_id = tag.split('_')
+        _, skeleton_id, bag_id, total= tag.split('_')
         bag_id = int(bag_id)
+        print(bag_id)
         skeleton = self.tag_skeleton_dict[tag]
         bags = skeleton[0::2]
+        # pdb.set_trace()
         # bags = self.skeleton[0::2]
         self.noun_bag.delete('1.0', 'end')
         self.noun_bag.insert('1.0', '\n(' + str(len(bags[bag_id])) + ' words)')
@@ -341,7 +348,7 @@ class ProcessWindow(tk.Frame):
         self.sentence.delete('1.0', tkinter.END)
         self.sentence.tag_configure('RED', foreground = '#ff0000')
         for i in range(0, len(self.sentence_list)):
-            if(i == bag_id):
+            if i == int(total):
                 self.sentence.insert(tkinter.END, self.sentence_list[i], 'RED')
             else:
                 self.sentence.insert(tkinter.END, self.sentence_list[i])
@@ -361,21 +368,22 @@ class ProcessWindow(tk.Frame):
         sentences = doc.splitlines()
 
         for i in range(len(sentences)):
-            parse_results = self.mecab.parse(sentences[i])
+            sentence = sentences[i]
+            parse_results = self.mecab.parse(sentence)
             self.sentence.delete('1.0', 'end')
             # self.sentence.insert('1.0', self.data[row_count][8])
-            self.sentence.insert('1.0', sentences[i])
-            self.skeleton = self.extract_skeleton(parse_results, 1)
-            symbol_skeleton = self.extract_symbol_skeleton()
+            self.sentence.insert('1.0', sentence)
+            skeleton = self.extract_skeleton(parse_results)
+            symbol_skeleton = self.extract_symbol_skeleton(skeleton)
             compiled_skeleton = self.compile_skeleton(symbol_skeleton)
 
-            max_r = int(max([len(x) for x in self.skeleton[0::2]])/2)
+            max_r = int(max([len(x) for x in skeleton[0::2]])/2)
             L = max_r + 40
 
             # start_x = 150
             # start_y = 100
             coords_vec = self.draw_lines(compiled_skeleton, self.draw_start_x, self.draw_start_y, L)
-            self.draw_offset_x, self.draw_offset_y = self.draw_circles(self.skeleton, coords_vec)
+            self.draw_offset_x, self.draw_offset_y = self.draw_circles(skeleton, i, coords_vec)
 
     def update_skeleton(self):
 
@@ -385,22 +393,27 @@ class ProcessWindow(tk.Frame):
         self.id_list = []
         self.tag_skeleton_dict = {}
 
+        self.draw_start_x = 150
+        self.draw_start_y = 100
+
+        self.sentence_list = []
+        self.tag_list = []
+
         sentences = updated_sentence.splitlines()
-        print(sentences)
+
         for i in range(len(sentences)):
             parse_results = self.mecab.parse(sentences[i])
-            self.skeleton = self.extract_skeleton(parse_results, 1)
-            symbol_skeleton = self.extract_symbol_skeleton()
+            skeleton = self.extract_skeleton(parse_results)
+
+            symbol_skeleton = self.extract_symbol_skeleton(skeleton)
             compiled_skeleton = self.compile_skeleton(symbol_skeleton)
 
-            max_r = int(max([len(x) for x in self.skeleton[0::2]])/2)
+            max_r = int(max([len(x) for x in skeleton[0::2]])/2)
             L = max_r + 40
 
             coords_vec = self.draw_lines(compiled_skeleton, self.draw_start_x, self.draw_start_y, L)
-            self.draw_start_x, self.draw_start_y = self.draw_circles(self.skeleton, coords_vec)
+            self.draw_start_x, self.draw_start_y = self.draw_circles(skeleton, i, coords_vec)
             self.draw_start_y += 100
-
-        print(self.id_list)
 
 if __name__ == '__main__':
 
