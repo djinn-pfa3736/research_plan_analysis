@@ -10,7 +10,7 @@ import tkinter as tk
 import tkinter.filedialog
 from tkinter import ttk
 
-import rohan_subwindow
+import rohan_subwindow_v2
 
 import pdb
 
@@ -72,7 +72,7 @@ class MainControl(tk.Frame):
             dir_list.append(symbol_data[i][4])
 
         self.new_window = tk.Toplevel()
-        process_window = rohan_subwindow.ProcessWindow(data = self.data, conj_list = conj_list, dir_list = dir_list, master = self.new_window)
+        process_window = rohan_subwindow_v2.ProcessWindow(data = self.data, conj_list = conj_list, dir_list = dir_list, master = self.new_window)
 
 if __name__ == "__main__":
     root = tk.Tk()
